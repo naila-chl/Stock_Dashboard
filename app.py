@@ -15,17 +15,17 @@ from plots.correlation_matrix import correlation_matrix
 st.title("Interactive Stock Dashboard")
 
 # Sidebar pour sélectionner les paramètres
-st.sidebar.header("Paramètres")
-symbol = st.sidebar.selectbox("Choisissez un symbole boursier", ["AAPL", "TSLA", "MSFT", "GOOG", "AMZN"])
-period = st.sidebar.selectbox("Choisissez une période:", ["1mo", "3mo", "6mo", "1y", "5y"], index=0)  # Par défaut "1mo"
+st.sidebar.header("Settings")
+symbol = st.sidebar.selectbox("Choose a stock symbol:", ["AAPL", "TSLA", "MSFT", "GOOG", "AMZN"])
+period = st.sidebar.selectbox("Choose a time period:", ["1mo", "3mo", "6mo", "1y", "5y"], index=0)  # Par défaut "1mo"
 visualization = st.sidebar.selectbox(
-    "Choisissez une visualisation:", 
+    "Choose a visualization:", 
     ["Candlestick", "Line Chart", "Volume", "Heatmap", "Daily Variation", 
      "Moving Average", "Comparaison des symboles", "RSI", "Distribution", "Correlation Matrix"]
 )
 
 # Télécharger les données
-st.write(f"**Données pour {symbol} ({period})**")
+st.write(f"**Data for  {symbol} ({period})**")
 data = fetch_stock_data(symbol, period)
 
 if data is not None:
@@ -37,7 +37,7 @@ if data is not None:
     data['Price Change (%)'] = data['Close'].pct_change() * 100  # Variation en pourcentage
 
     # Afficher les informations des différences de prix et des variations en pourcentage
-    st.subheader("Différences de prix et variations en pourcentage")
+    st.subheader("Recent Data with Price Differences and Percentage Changes")
     st.write(data[['Close', 'Price Change', 'Price Change (%)']].tail())  # Afficher les 5 dernières lignes
 
     # Afficher le graphique choisi
@@ -54,7 +54,7 @@ if data is not None:
     elif visualization == "Moving Average":
         st.plotly_chart(moving_average_chart(data))
     elif visualization == "Comparaison des symboles":
-        symbols = st.sidebar.text_input("Entrez les symboles à comparer (séparés par des virgules)", "AAPL,MSFT").split(',')
+        symbols = st.sidebar.text_input("Enter symbols to compare (separated by commas)", "AAPL,MSFT").split(',')
         st.plotly_chart(compare_symbols_chart(symbols, period))
     elif visualization == "RSI":
         st.plotly_chart(rsi_chart(data))
@@ -65,10 +65,11 @@ if data is not None:
 
     # Bouton pour télécharger les données en CSV
     st.download_button(
-        label="Télécharger les données en CSV",
+        label="Download Data as CSV",
         data=data.to_csv(index=True).encode('utf-8'),
         file_name=f"{symbol}_data.csv",
         mime='text/csv',
     )
 else:
-    st.error("Impossible de charger les données.")
+
+    st.error("Unable to load data. Please select a stock symbol.")
