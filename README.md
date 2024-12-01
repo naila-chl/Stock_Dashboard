@@ -30,6 +30,20 @@ This project is an interactive stock data visualization app built with **Streaml
 4. **Data Export:**
    - Download raw data as a CSV file.
 
+## Screenshots
+
+Here are some screenshots of the application:
+
+![Dashboard Screenshot](./screenshots/dashboard.png)
+
+![calculs Screenshot](./screenshots/calculs.png)
+
+![Plot 1](./screenshots/plot1.png)
+
+![Plot 2](./screenshots/plot2.png)
+
+![Plot 3](./screenshots/plot3.png)
+
 ---
 
 ## Installation 🚀
@@ -53,3 +67,4 @@ streamlit run app.py
 
 4. Open the app in your browser at:
 http://localhost:8501
+
