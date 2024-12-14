@@ -1,8 +1,6 @@
 import plotly.express as px
 
 def correlation_matrix(data):
-    """Crée une matrice de corrélation."""
-    corr = data[['Open', 'High', 'Low', 'Close', 'Volume']].corr()
-    fig = px.imshow(corr, text_auto=True, title="Matrice de corrélation")
-    fig.update_layout(xaxis_title="Attributs", yaxis_title="Attributs")
+    pivot_data = data.pivot(index="Date", columns="Symbol", values="Close")
+    fig = px.imshow(pivot_data.corr(), text_auto=True, title="Correlation Matrix")
     return fig

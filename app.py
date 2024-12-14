@@ -1,75 +1,94 @@
 import streamlit as st
+import plotly.express as px
+import pandas as pd
 from data.stock_data import fetch_stock_data
 from plots.candlestick import candlestick_plot
 from plots.line_chart import line_chart
 from plots.volume_bar import volume_bar
-from plots.heatmap import heatmap_plot
 from plots.daily_variation import daily_variation_chart
 from plots.moving_average import moving_average_chart
 from plots.compare_symbols import compare_symbols_chart
 from plots.rsi import rsi_chart
 from plots.price_distribution import price_distribution_chart
 from plots.correlation_matrix import correlation_matrix
+from plots.piechart import pie_chart  # Import the pie chart function
 
-# Titre de l'application
-st.title("Interactive Stock Dashboard")
 
-# Sidebar pour sélectionner les paramètres
-st.sidebar.header("Settings")
-symbol = st.sidebar.selectbox("Choose a stock symbol:", ["AAPL", "TSLA", "MSFT", "GOOG", "AMZN"])
-period = st.sidebar.selectbox("Choose a time period:", ["1mo", "3mo", "6mo", "1y", "5y"], index=0)  # Par défaut "1mo"
-visualization = st.sidebar.selectbox(
-    "Choose a visualization:", 
-    ["Candlestick", "Line Chart", "Volume", "Heatmap", "Daily Variation", 
-     "Moving Average", "Comparaison des symboles", "RSI", "Distribution", "Correlation Matrix"]
+# Title of the application
+st.title("Stock Market Dashboard")
+
+# Sidebar to select symbols and period
+st.sidebar.header("Select Parameters")
+
+# Predefined list of stock symbols for checklist
+available_symbols = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN"]
+selected_symbols = st.sidebar.multiselect(
+    "Select stock symbols:", 
+    options=available_symbols, 
+    default=available_symbols  # Default to all selected
 )
 
-# Télécharger les données
-st.write(f"**Data for  {symbol} ({period})**")
-data = fetch_stock_data(symbol, period)
+# Period selection
+period = st.sidebar.selectbox("Select period:", ["1mo", "3mo", "6mo", "1y", "5y"])
 
-if data is not None:
-    # Afficher les données brutes
-    st.write(data.tail())
+# Load the data
+if selected_symbols:
+    st.write(f"**Data for {', '.join(selected_symbols)} ({period})**")
+    data = fetch_stock_data(selected_symbols, period)
 
-    # Calcul des différences de prix et des variations en pourcentage
-    data['Price Change'] = data['Close'].diff()  # Différence de prix
-    data['Price Change (%)'] = data['Close'].pct_change() * 100  # Variation en pourcentage
+    if data is not None:
+        st.write(data.tail())
 
-    # Afficher les informations des différences de prix et des variations en pourcentage
-    st.subheader("Recent Data with Price Differences and Percentage Changes")
-    st.write(data[['Close', 'Price Change', 'Price Change (%)']].tail())  # Afficher les 5 dernières lignes
+        # Use Streamlit columns to display multiple plots side by side
+        col1, col2 = st.columns(2)
 
-    # Afficher le graphique choisi
-    if visualization == "Candlestick":
-        st.plotly_chart(candlestick_plot(data))
-    elif visualization == "Line Chart":
-        st.plotly_chart(line_chart(data))
-    elif visualization == "Volume":
-        st.plotly_chart(volume_bar(data))
-    elif visualization == "Heatmap":
-        st.plotly_chart(heatmap_plot(data))
-    elif visualization == "Daily Variation":
-        st.plotly_chart(daily_variation_chart(data))
-    elif visualization == "Moving Average":
-        st.plotly_chart(moving_average_chart(data))
-    elif visualization == "Comparaison des symboles":
-        symbols = st.sidebar.text_input("Enter symbols to compare (separated by commas)", "AAPL,MSFT").split(',')
-        st.plotly_chart(compare_symbols_chart(symbols, period))
-    elif visualization == "RSI":
-        st.plotly_chart(rsi_chart(data))
-    elif visualization == "Distribution":
-        st.plotly_chart(price_distribution_chart(data))
-    elif visualization == "Correlation Matrix":
-        st.plotly_chart(correlation_matrix(data))
+        # Candlestick Plot
+        with col1:
+            st.plotly_chart(candlestick_plot(data))
 
-    # Bouton pour télécharger les données en CSV
-    st.download_button(
-        label="Download Data as CSV",
-        data=data.to_csv(index=True).encode('utf-8'),
-        file_name=f"{symbol}_data.csv",
-        mime='text/csv',
-    )
+        # Line Chart (For Multiple Symbols in One Chart)
+        with col2:
+            st.plotly_chart(line_chart(data, selected_symbols))
+
+        # Display other charts
+        col3, col4 = st.columns(2)
+
+        # Volume Bar Plot
+        with col3:
+            st.plotly_chart(volume_bar(data))
+
+        
+
+        # Daily Variation Plot
+        with col1:
+            st.plotly_chart(daily_variation_chart(data))
+
+        # Moving Average
+        with col2:
+            st.plotly_chart(moving_average_chart(data))
+
+        # RSI Plot
+        with col3:
+            st.plotly_chart(rsi_chart(data))
+
+        # Price Distribution Plot
+        with col4:
+            st.plotly_chart(price_distribution_chart(data))
+
+        # Correlation Matrix Plot
+        with col1:
+            st.plotly_chart(correlation_matrix(data))
+
+            
+
+        # Download Button
+        st.download_button(
+            label="Download Data as CSV",
+            data=data.to_csv(index=True).encode('utf-8'),
+            file_name=f"{','.join(selected_symbols)}_data.csv",
+            mime='text/csv',
+        )
+    else:
+        st.error("Failed to load data.")
 else:
-
-    st.error("Unable to load data. Please select a stock symbol.")
+    st.warning("Please select at least one stock symbol.")

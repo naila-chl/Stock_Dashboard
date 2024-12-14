@@ -1,13 +1,17 @@
 import plotly.graph_objects as go
 
 def candlestick_plot(data):
-    """Crée un graphique en chandelier."""
-    fig = go.Figure(data=[go.Candlestick(
-        x=data['Date'],
-        open=data['Open'],
-        high=data['High'],
-        low=data['Low'],
-        close=data['Close']
-    )])
-    fig.update_layout(title="Graphique en chandelier", xaxis_title="Date", yaxis_title="Prix ($)")
+    fig = go.Figure()
+    symbols = data['Symbol'].unique()
+    for symbol in symbols:
+        symbol_data = data[data['Symbol'] == symbol]
+        fig.add_trace(go.Candlestick(
+            x=symbol_data['Date'],
+            open=symbol_data['Open'],
+            high=symbol_data['High'],
+            low=symbol_data['Low'],
+            close=symbol_data['Close'],
+            name=symbol,
+        ))
+    fig.update_layout(title="Candlestick Chart", xaxis_title="Date", yaxis_title="Price")
     return fig
